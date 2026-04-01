@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lista de Presentes 🎁</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0d0d;
+      --surface: #161616;
+      --card: #1c1c1c;
+      --border: #2a2a2a;
+      --accent: #f0c040;
+      --accent2: #e05c2a;
+      --text: #f0ede6;
+      --muted: #888;
+      --taken-bg: #1a1a1a;
+      --taken-border: #2a2a2a;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* BACKGROUND PATTERN */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(240,192,64,0.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(224,92,42,0.06) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+    }
+
+    /* HEADER */
+    header {
+      text-align: center;
+      padding: 60px 0 48px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: rgba(240,192,64,0.12);
+      border: 1px solid rgba(240,192,64,0.3);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 12vw, 88px);
+      line-height: 0.92;
+      letter-spacing: 0.02em;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    h1 span {
+      -webkit-text-stroke: 1.5px var(--accent);
+      color: transparent;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 380px;
+      margin: 0 auto;
+    }
+
+    /* COUNTER BAR */
+    .counter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      margin-bottom: 28px;
+    }
+
+    .counter-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .counter-numbers {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.05em;
+    }
+
+    .counter-numbers .taken { color: var(--accent2); }
+    .counter-numbers .sep { color: var(--border); margin: 0 4px; }
+    .counter-numbers .total { color: var(--muted); }
+
+    .progress-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      flex: 1;
+      margin: 0 16px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      border-radius: 2px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 0%;
+    }
+
+    /* GIFT LIST */
+    .gift-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .gift-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+
+    .gift-card:hover:not(.taken) {
+      border-color: var(--accent);
+      transform: translateX(4px);
+      background: #212121;
+    }
+
+    .gift-card.taken {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: var(--taken-bg);
+      border-color: var(--taken-border);
+    }
+
+    .gift-card-inner {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 20px;
+    }
+
+    /* ICON */
+    .gift-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+      background: rgba(240,192,64,0.08);
+      border: 1px solid rgba(240,192,64,0.15);
+      transition: all 0.25s;
+    }
+
+    .gift-card.taken .gift-icon {
+      background: rgba(255,255,255,0.04);
+      border-color: var(--border);
+      filter: grayscale(1);
+    }
+
+    .gift-card:hover:not(.taken) .gift-icon {
+      background: rgba(240,192,64,0.15);
+    }
+
+    /* INFO */
+    .gift-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .gift-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.2s;
+    }
+
+    .gift-card.taken .gift-name {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-color: #444;
+    }
+
+    .gift-status {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .gift-status.available { color: rgba(240,192,64,0.6); }
+    .gift-status.reserved { color: #555; }
+
+    /* PRICE BADGE */
+    .gift-price {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .gift-card.taken .gift-price { color: #444; }
+
+    /* TAKEN OVERLAY BADGE */
+    .taken-badge {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      background: rgba(100,100,100,0.15);
+      border: 1px solid #333;
+      color: #555;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 100px;
+      display: none;
+    }
+
+    .gift-card.taken .taken-badge { display: block; }
+
+    /* CHOOSE BUTTON */
+    .btn-choose {
+      flex-shrink: 0;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-choose:hover { background: #f5d060; transform: scale(1.04); }
+
+    .gift-card.taken .btn-choose {
+      background: transparent;
+      border: 1px solid #333;
+      color: #555;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--card);
+      border: 1px solid #2e2e2e;
+      border-radius: 20px;
+      padding: 36px 32px;
+      max-width: 380px;
+      width: 100%;
+      text-align: center;
+      transform: scale(0.9) translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .modal-overlay.active .modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-emoji { font-size: 52px; margin-bottom: 12px; line-height: 1; }
+
+    .modal h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 32px;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+    }
+
+    .modal p {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .modal p strong { color: var(--text); font-weight: 600; }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 12px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel:hover { border-color: #444; color: var(--text); }
+
+    .btn-confirm {
+      flex: 2;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      border: none;
+      color: #000;
+      padding: 12px;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-confirm:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+    /* SUCCESS TOAST */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #1e1e1e;
+      border: 1px solid rgba(240,192,64,0.3);
+      color: var(--text);
+      padding: 12px 22px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 200;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding-top: 48px;
+      color: #444;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ENTER ANIMATION */
+    .gift-card {
+      opacity: 0;
+      transform: translateY(16px);
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 52px; }
+      .gift-name { font-size: 14px; }
+      .btn-choose { padding: 7px 12px; font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="tag">🎁 Lista de Presentes</div>
+    <h1>O QUE EU <span>QUERO</span></h1>
+    <p class="subtitle">Escolha um presente abaixo. Assim que selecionado, ele fica reservado automaticamente para você!</p>
+  </header>
+
+  <div class="counter-bar">
+    <div>
+      <div class="counter-label">Presentes</div>
+      <div class="counter-numbers">
+        <span class="taken" id="takenCount">0</span>
+        <span class="sep">/</span>
+        <span class="total" id="totalCount">9</span>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div style="text-align:right">
+      <div class="counter-label">Reservados</div>
+    </div>
+  </div>
+
+  <div class="gift-list" id="giftList"></div>
+
+  <footer>feito com ♥ · reservas salvas automaticamente</footer>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-emoji" id="modalEmoji">🎁</div>
+    <h2 id="modalTitle">Você tem certeza?</h2>
+    <p id="modalDesc">Você está prestes a reservar <strong id="modalGiftName"></strong>. Depois de confirmar, não será possível desfazer.</p>
+    <div class="modal-buttons">
+      <button class="btn-cancel" id="btnCancel">Cancelar</button>
+      <button class="btn-confirm" id="btnConfirm">Confirmar 🎉</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">✅ Presente reservado com sucesso!</div>
+
+<script>
+  const gifts = [
+    { id: 1, name: "Blusa Cinza",                  icon: "👕", price: null },
+    { id: 2, name: "Boné do Touro da Nike (preto)", icon: "🧢", price: null },
+    { id: 3, name: "Celular novo",                  icon: "📱", price: null },
+    { id: 4, name: "Camisas Dry Fit",               icon: "👔", price: null },
+    { id: 5, name: "Short de Futebol Preto",        icon: "🩳", price: null },
+    { id: 6, name: "Meia Pro Soccer",               icon: "🧦", price: null },
+    { id: 7, name: "Chuteira Joma Maxima Branca",   icon: "👟", price: null },
+    { id: 8, name: "Tênis novo",                    icon: "👟", price: null },
+    { id: 9, name: "Jaqueta do Interclasse",        icon: "🧥", price: "R$130" },
+  ];
+
+  const STORAGE_KEY = 'gift_list_taken';
+
+  function getTaken() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch { return []; }
+  }
+
+  function markTaken(id) {
+    const taken = getTaken();
+    if (!taken.includes(id)) taken.push(id);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(taken));
+  }
+
+  let pendingId = null;
+
+  function updateCounter() {
+    const taken = getTaken();
+    const total = gifts.length;
+    const count = taken.length;
+    document.getElementById('takenCount').textContent = count;
+    document.getElementById('totalCount').textContent = total;
+    document.getElementById('progressFill').style.width = ((count / total) * 100) + '%';
+  }
+
+  function renderGifts() {
+    const taken = getTaken();
+    const list = document.getElementById('giftList');
+    list.innerHTML = '';
+
+    gifts.forEach((g, i) => {
+      const isTaken = taken.includes(g.id);
+      const card = document.createElement('div');
+      card.className = 'gift-card' + (isTaken ? ' taken' : '');
+      card.style.animationDelay = (i * 0.06) + 's';
+      card.innerHTML = `
+        <div class="gift-card-inner">
+          <div class="gift-icon">${g.icon}</div>
+          <div class="gift-info">
+            <div class="gift-name">${g.name}</div>
+            <div class="gift-status ${isTaken ? 'reserved' : 'available'}">
+              ${isTaken ? 'Já reservado' : 'Disponível'}
+            </div>
+          </div>
+          ${g.price ? `<div class="gift-price">${g.price}</div>` : ''}
+          <button class="btn-choose" ${isTaken ? 'disabled' : ''}>
+            ${isTaken ? 'Reservado' : 'Escolher'}
+          </button>
+        </div>
+        <div class="taken-badge">Reservado</div>
+      `;
+
+      if (!isTaken) {
+        card.addEventListener('click', () => openModal(g));
+      }
+
+      list.appendChild(card);
+    });
+
+    updateCounter();
+  }
+
+  // MODAL
+  const overlay = document.getElementById('modalOverlay');
+  const btnConfirm = document.getElementById('btnConfirm');
+  const btnCancel = document.getElementById('btnCancel');
+
+  function openModal(gift) {
+    pendingId = gift.id;
+    document.getElementById('modalEmoji').textContent = gift.icon;
+    document.getElementById('modalGiftName').textContent = gift.name;
+    overlay.classList.add('active');
+  }
+
+  function closeModal() {
+    overlay.classList.remove('active');
+    pendingId = null;
+  }
+
+  btnCancel.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+
+  btnConfirm.addEventListener('click', () => {
+    if (pendingId == null) return;
+    markTaken(pendingId);
+    closeModal();
+    renderGifts();
+    showToast();
+  });
+
+  function showToast() {
+    const t = document.getElementById('toast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // INIT
+  renderGifts();
+</script>
+</body>
+</html>
